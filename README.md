@@ -40,3 +40,10 @@ Progress-bar ETAs are notoriously jittery because they are usually computed from
 - **Stalled progress** — if units do not advance across the window the rate is `0` and `estimateRemainingSeconds()` returns `Infinity`. This is deliberate so callers can distinguish "still going" from "stuck" without a separate status field.
 - **Regressions** — `record()` rejects `units` lower than the previous sample, `units` beyond `totalUnits`, non-finite `units`, and a clock that goes backwards. These are surfaced as `RangeError` rather than silently clamped, because a regression almost always indicates a caller bug and a silent clamp would produce silently wrong estimates.
 - **Injectable clock** — pass `{ clock: () => seconds }` to make behaviour deterministic in tests. `defaultClock` returns `Date.now() / 1000`.
+
+## Design notes
+
+The window stores values eagerly rather than keeping running aggregates. Running
+sums drift with floating point over long streams, and recomputing from a small
+buffer is cheap enough that the drift is not worth the speed.
+
